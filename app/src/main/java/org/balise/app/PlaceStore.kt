@@ -11,7 +11,6 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
 
-// Extension pour créer le DataStore
 private val Context.placeDataStore: DataStore<Preferences> by preferencesDataStore(name = "places_prefs")
 
 class PlaceStore(private val context: Context) {
@@ -20,7 +19,6 @@ class PlaceStore(private val context: Context) {
         private val PLACES_KEY = stringPreferencesKey("saved_places")
     }
 
-    // Charger la liste des lieux
     fun load(): List<Place> {
         return runBlocking {
             try {
@@ -49,7 +47,6 @@ class PlaceStore(private val context: Context) {
         }
     }
 
-    // Sauvegarder la liste des lieux
     fun save(places: List<Place>) {
         runBlocking {
             try {
