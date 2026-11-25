@@ -1,1 +1,182 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex">
+<title>Balise – Partager ma position</title>
+<style>
+  :root {
+    --night: #061226;
+    --navy: #0b1f4d;
+    --navy-2: #12306b;
+    --orange: #ff7a1a;
+    --orange-2: #ff9a3d;
+    --ink: #f3f6fc;
+    --muted: #aab6d3;
+    --ok: #4ade80;
+    --err: #ffb4a8;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: radial-gradient(120% 60% at 50% 0%, var(--navy-2) 0%, var(--night) 60%) fixed;
+    color: var(--ink);
+    font: 17px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+  }
+  main { max-width: 440px; margin: 0 auto; text-align: center; }
+  svg.logo { width: 112px; height: 112px; margin-top: 8px; }
+  h1 { font-size: 2rem; letter-spacing: .08em; margin: 4px 0 2px; }
+  .who { font-size: 1.15rem; margin: 18px 0 6px; }
+  .hint { color: var(--muted); font-size: .95rem; margin: 0 0 22px; }
+  button, a.btn {
+    display: block; width: 100%; border: 0; border-radius: 16px;
+    padding: 16px 18px; margin: 10px 0; font: inherit; font-weight: 700;
+    text-decoration: none; cursor: pointer; text-align: center;
+  }
+  .primary { background: linear-gradient(180deg, var(--orange-2), var(--orange)); color: var(--navy); font-size: 1.15rem; }
+  .secondary { background: var(--navy); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--navy-2); }
+  button:disabled { opacity: .7; cursor: wait; }
+  :focus-visible { outline: 3px solid var(--orange-2); outline-offset: 3px; }
+  .card { background: rgba(11, 31, 77, .75); border-radius: 18px; padding: 16px; margin: 18px 0; box-shadow: inset 0 0 0 1.5px var(--navy-2); }
+  .coords { font-size: 1.3rem; font-weight: 700; word-break: break-word; }
+  .acc { color: var(--muted); font-size: .95rem; margin-top: 4px; }
+  .ok { color: var(--ok); font-weight: 600; }
+  .error { background: rgba(255, 180, 168, .12); color: var(--err); border-radius: 14px; padding: 12px 14px; text-align: left; }
+  .privacy { color: var(--muted); font-size: .85rem; margin-top: 28px; }
+  .sos { margin-top: 18px; font-size: .9rem; color: var(--muted); }
+  .sos strong { color: var(--orange-2); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <svg class="logo" viewBox="0 0 108 108" role="img" aria-label="Balise">
+    <path d="M30,76 A24,7.5 0 1,0 78,76 A24,7.5 0 1,0 30,76 Z" fill="none" stroke="#ffffff" stroke-opacity=".55" stroke-width="2.5"/>
+    <path d="M40,76 A14,4.5 0 1,0 68,76 A14,4.5 0 1,0 40,76 Z" fill="none" stroke="#ffffff" stroke-opacity=".8" stroke-width="2.5"/>
+    <path d="M54,76 C54,76 36,60 36,46 A18,18 0 0,1 72,46 C72,60 54,76 54,76 Z" fill="#ff7a1a"/>
+    <circle cx="54" cy="46" r="7" fill="#fff"/>
+  </svg>
+  <h1>Balise</h1>
 
+  <p class="who" id="who"></p>
+  <p class="hint" id="hint">Vous restez libre de refuser. Rien n’est envoyé sans votre accord.</p>
+
+  <section id="ask">
+    <button class="primary" id="share" type="button">Partager ma position</button>
+  </section>
+
+  <p class="error" id="error" role="alert" hidden></p>
+
+  <section id="result" hidden>
+    <div class="card">
+      <div class="ok">Position trouvée</div>
+      <div class="coords" id="coords"></div>
+      <div class="acc" id="acc"></div>
+    </div>
+    <p class="hint">Dernière étape : envoyez-la avec votre messagerie.</p>
+    <a class="btn primary" id="sms" href="#" hidden>Envoyer par SMS</a>
+    <a class="btn secondary" id="wa" href="#" target="_blank" rel="noopener" hidden>Envoyer par WhatsApp</a>
+    <button class="secondary" id="native" type="button" hidden>Choisir une autre application</button>
+    <button class="secondary" id="copy" type="button">Copier le message</button>
+  </section>
+
+  <p class="sos">En danger ou blessé ? Appelez le <strong>112</strong> (le <strong>114</strong> par SMS si vous ne pouvez pas parler).</p>
+  <p class="privacy">Cette page ne conserve rien et n’envoie votre position à aucun serveur : elle reste sur votre téléphone jusqu’à ce que vous l’envoyiez vous-même.</p>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+
+  // Lien attendu : …/#n=33612345678&p=Marie  (n = numéro international sans « + »)
+  var params = new URLSearchParams(location.hash.replace(/^#/, ""));
+  var number = (params.get("n") || "").replace(/\D/g, "");
+  var name = (params.get("p") || "").replace(/[<>]/g, "").slice(0, 40);
+
+  $("who").textContent = name
+    ? name + " vous demande votre position."
+    : "Quelqu’un vous demande votre position.";
+
+  function showError(msg) {
+    var e = $("error");
+    e.textContent = msg;
+    e.hidden = false;
+    var b = $("share");
+    b.disabled = false;
+    b.textContent = "Réessayer";
+  }
+
+  function onPosition(pos) {
+    var c = pos.coords;
+    var lat = c.latitude.toFixed(6);
+    var lon = c.longitude.toFixed(6);
+    var acc = Math.round(c.accuracy);
+    var link = "https://www.openstreetmap.org/?mlat=" + lat + "&mlon=" + lon +
+               "#map=18/" + lat + "/" + lon;
+    var text = "Ma position : " + lat + ", " + lon +
+               " (précision ± " + acc + " m)\n" + link;
+
+    $("error").hidden = true;
+    $("ask").hidden = true;
+    $("hint").hidden = true;
+    $("coords").textContent = lat + ", " + lon;
+    $("acc").textContent = "Précision : ± " + acc + " m" +
+      (acc > 100 ? " — peu précis, sortez à l’air libre et réessayez si possible" : "");
+
+    if (number) {
+      var sep = /iPhone|iPad|iPod/.test(navigator.userAgent) ? "&" : "?";
+      $("sms").href = "sms:+" + number + sep + "body=" + encodeURIComponent(text);
+      $("sms").hidden = false;
+      $("wa").href = "https://wa.me/" + number + "?text=" + encodeURIComponent(text);
+      $("wa").hidden = false;
+    }
+    if (navigator.share) {
+      $("native").hidden = false;
+      $("native").onclick = function () {
+        navigator.share({ text: text }).catch(function () {});
+      };
+    }
+    $("copy").onclick = function () {
+      var done = function () { $("copy").textContent = "Message copié"; };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () { window.prompt("Copiez ce message :", text); });
+      } else {
+        window.prompt("Copiez ce message :", text);
+      }
+    };
+    $("result").hidden = false;
+  }
+
+  function onFailure(err) {
+    if (err && err.code === 1) {
+      showError("La position a été refusée. Pour la partager, autorisez la localisation pour ce site dans les réglages du navigateur, puis réessayez.");
+    } else if (err && err.code === 3) {
+      showError("La recherche a pris trop de temps. Sortez à l’air libre, vérifiez que la localisation est activée, puis réessayez.");
+    } else {
+      showError("Position introuvable. Vérifiez que la localisation du téléphone est activée. Si cette page s’est ouverte dans une autre application, ouvrez-la dans Chrome ou Safari.");
+    }
+  }
+
+  $("share").addEventListener("click", function () {
+    if (!navigator.geolocation) {
+      showError("Ce navigateur ne peut pas donner la position. Ouvrez ce lien dans Chrome ou Safari.");
+      return;
+    }
+    var b = $("share");
+    b.disabled = true;
+    b.textContent = "Recherche de votre position…";
+    $("error").hidden = true;
+    navigator.geolocation.getCurrentPosition(onPosition, onFailure, {
+      enableHighAccuracy: true,
+      timeout: 25000,
+      maximumAge: 0
+    });
+  });
+})();
+</script>
+</body>
+</html>
