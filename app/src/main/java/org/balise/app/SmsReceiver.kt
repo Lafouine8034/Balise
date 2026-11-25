@@ -33,10 +33,17 @@ class SmsReceiver : BroadcastReceiver() {
 object SmsHandler {
     private val reqRegex = Regex("""BALISE1 REQ ([a-z0-9]{6})""")
     private val posRegex = Regex("""BALISE1 POS ([a-z0-9]{6}) (-?\d{1,3}\.\d+) (-?\d{1,3}\.\d+) (\d+)""")
+    private val grpRegex = Regex("""BALISE1 GRP ([a-z0-9]{6}) (\S+) ([^|]+)\|([0-9+,]*)""")
+    private val msgRegex = Regex("""(?s)BALISE1 MSG ([a-z0-9]{6}) (\S+) (.+)""")
+    private val gpsRegex = Regex("""BALISE1 GPS ([a-z0-9]{6}) (\S+) (-?\d{1,3}\.\d+) (-?\d{1,3}\.\d+) (\d+)""")
+    private val lveRegex = Regex("""BALISE1 LVE ([a-z0-9]{6}) (\S+)""")
     private const val MAX_AGE_MS = 24L * 3600L * 1000L
 
     fun handle(context: Context, sender: String, body: String) {
         if (sender.isBlank()) return
+        if (!body.contains("BALISE1")) return
+        if (handleGroup(context, sender, body)) return
+
         val store = MessageStore(context)
 
         val pos = posRegex.find(body)
@@ -57,7 +64,7 @@ object SmsHandler {
             )
             store.savePending(store.loadPending().filter { it.id != id })
             Inbox.changed()
-            showNotification(context, "Position reçue", "$label a partagé sa position.")
+            showNotification(context, "Position reçue", "$label a partagé sa position.", 2)
             return
         }
 
@@ -68,21 +75,93 @@ object SmsHandler {
             if (list.any { it.id == id && it.from == sender }) return
             store.saveIncoming(listOf(IncomingRequest(id, sender, System.currentTimeMillis())) + list)
             Inbox.changed()
-            showNotification(context, "Demande de position", "$sender demande votre position. Touchez pour répondre.")
+            showNotification(context, "Demande de position", "$sender demande votre position. Touchez pour répondre.", 2)
         }
+    }
+
+    private fun handleGroup(context: Context, sender: String, body: String): Boolean {
+        val gs = GroupStore(context)
+        val now = System.currentTimeMillis()
+
+        val grp = grpRegex.find(body)
+        if (grp != null) {
+            val code = grp.groupValues[1]
+            if (gs.loadGroups().any { it.code == code }) return true
+            val invites = gs.loadInvites()
+            if (invites.any { it.code == code }) return true
+            val numbers = grp.groupValues[4].split(",").filter { it.isNotBlank() }
+            val invite = GroupInvite(code, grp.groupValues[3].trim(), sender, grp.groupValues[2], numbers, now)
+            gs.saveInvites(listOf(invite) + invites)
+            Inbox.changed()
+            showNotification(
+                context, "Invitation de groupe",
+                "${invite.fromPseudo} vous invite dans le groupe « ${invite.name} ».", 3
+            )
+            return true
+        }
+
+        val gps = gpsRegex.find(body)
+        if (gps != null) {
+            val code = gps.groupValues[1]
+            val group = gs.loadGroups().firstOrNull { it.code == code } ?: return true
+            if (group.members.none { sameNumber(it.number, sender) }) return true
+            val lat = gps.groupValues[3].toDoubleOrNull()
+            val lon = gps.groupValues[4].toDoubleOrNull()
+            val acc = gps.groupValues[5].toIntOrNull()
+            if (lat == null || lon == null || acc == null) return true
+            if (lat !in -90.0..90.0 || lon !in -180.0..180.0) return true
+            val pseudo = gps.groupValues[2]
+            gs.updateMemberPseudo(code, sender, pseudo)
+            gs.addMessage(
+                code,
+                GroupMessage(now, sender, pseudo, "Position partagée", lat, lon, acc.toFloat(), now, false)
+            )
+            Inbox.changed()
+            showNotification(context, group.name, "$pseudo a partagé sa position.", 3)
+            return true
+        }
+
+        val msg = msgRegex.find(body)
+        if (msg != null) {
+            val code = msg.groupValues[1]
+            val group = gs.loadGroups().firstOrNull { it.code == code } ?: return true
+            if (group.members.none { sameNumber(it.number, sender) }) return true
+            val pseudo = msg.groupValues[2]
+            val text = msg.groupValues[3].trim()
+            gs.updateMemberPseudo(code, sender, pseudo)
+            gs.addMessage(code, GroupMessage(now, sender, pseudo, text, null, null, 0f, now, false))
+            Inbox.changed()
+            showNotification(context, group.name, "$pseudo : ${text.take(100)}", 3)
+            return true
+        }
+
+        val lve = lveRegex.find(body)
+        if (lve != null) {
+            val code = lve.groupValues[1]
+            val group = gs.loadGroups().firstOrNull { it.code == code } ?: return true
+            if (group.members.none { sameNumber(it.number, sender) }) return true
+            gs.removeMember(code, sender)
+            gs.addMessage(
+                code,
+                GroupMessage(now, sender, lve.groupValues[2], "a quitté le groupe", null, null, 0f, now, false)
+            )
+            Inbox.changed()
+            return true
+        }
+        return false
     }
 }
 
-private fun showNotification(context: Context, title: String, text: String) {
+fun showNotification(context: Context, title: String, text: String, tab: Int) {
     val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     nm.createNotificationChannel(
-        NotificationChannel("balise_requests", "Demandes de position", NotificationManager.IMPORTANCE_HIGH)
+        NotificationChannel("balise_requests", "Demandes et groupes", NotificationManager.IMPORTANCE_HIGH)
     )
     val open = Intent(context, MainActivity::class.java)
-        .putExtra("tab", 2)
+        .putExtra("tab", tab)
         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
     val pi = PendingIntent.getActivity(
-        context, 0, open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        context, tab, open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
     )
     val notification = Notification.Builder(context, "balise_requests")
         .setSmallIcon(android.R.drawable.ic_menu_mylocation)
@@ -94,7 +173,7 @@ private fun showNotification(context: Context, title: String, text: String) {
     try {
         nm.notify((System.currentTimeMillis() % 100000).toInt(), notification)
     } catch (e: SecurityException) {
-        // notifications refusées : la demande reste visible dans l'onglet Demandes
+        // notifications refusées : le contenu reste visible dans l'application
     }
 }
 
