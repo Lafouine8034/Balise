@@ -59,12 +59,13 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun BaliseApp() {
     var tab by remember { mutableIntStateOf(0) }
+    var guiding by remember { mutableStateOf<Place?>(null) }
     Scaffold(
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
                     selected = tab == 0,
-                    onClick = { tab = 0 },
+                    onClick = { tab = 0; guiding = null },
                     icon = {},
                     label = { Text("Où suis-je ?") }
                 )
@@ -78,7 +79,14 @@ fun BaliseApp() {
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
-            if (tab == 0) WhereAmIScreen() else PlacesScreen()
+            val target = guiding
+            if (target != null && tab == 1) {
+                GuideScreen(place = target, onClose = { guiding = null })
+            } else if (tab == 0) {
+                WhereAmIScreen()
+            } else {
+                PlacesScreen(onGuide = { guiding = it })
+            }
         }
     }
 }
@@ -136,7 +144,7 @@ fun WhereAmIScreen() {
 }
 
 @Composable
-fun PlacesScreen() {
+fun PlacesScreen(onGuide: (Place) -> Unit) {
     val context = LocalContext.current
     val store = remember { PlaceStore(context) }
     var places by remember { mutableStateOf(store.load()) }
@@ -222,7 +230,11 @@ fun PlacesScreen() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(places, key = { it.id }) { place ->
-                PlaceCard(place = place, onDelete = { toDelete = place })
+                PlaceCard(
+                    place = place,
+                    onGuide = { onGuide(place) },
+                    onDelete = { toDelete = place }
+                )
             }
         }
     }
@@ -247,7 +259,7 @@ fun PlacesScreen() {
 }
 
 @Composable
-fun PlaceCard(place: Place, onDelete: () -> Unit) {
+fun PlaceCard(place: Place, onGuide: () -> Unit, onDelete: () -> Unit) {
     val context = LocalContext.current
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -261,8 +273,9 @@ fun PlaceCard(place: Place, onDelete: () -> Unit) {
             )
             Text(formatDecimal(place.latitude, place.longitude))
             Text("Précision : ± ${place.accuracy.toInt()} m", style = MaterialTheme.typography.bodySmall)
+            Button(onClick = onGuide, modifier = Modifier.fillMaxWidth()) { Text("Me guider (sans réseau)") }
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                TextButton(onClick = { openInMaps(context, place) }) { Text("Y aller") }
+                TextButton(onClick = { openInMaps(context, place) }) { Text("Ouvrir la carte") }
                 TextButton(onClick = {
                     sharePosition(context, place.name, place.latitude, place.longitude, place.accuracy)
                 }) { Text("Partager") }
