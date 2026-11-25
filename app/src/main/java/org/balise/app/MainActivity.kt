@@ -168,6 +168,251 @@ fun BaliseApp(startTab: Int = 0) {
 
 
 @Composable
+private fun HomeScreen(onNavigate: (Int) -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DeepNavy)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 18.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "BALISE",
+                    color = Pale,
+                    fontSize = 27.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 4.sp
+                )
+                Text(
+                    "Restez proches, où que vous soyez",
+                    color = Muted,
+                    fontSize = 13.sp
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(54.dp)
+                    .background(CardBlue, RoundedCornerShape(18.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("♥", color = Orange, fontSize = 31.sp)
+            }
+        }
+
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFF0D2946)
+            ),
+            shape = RoundedCornerShape(22.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text("⌖", color = Orange, fontSize = 30.sp)
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Statut", color = Muted, fontSize = 12.sp)
+                    Text(
+                        "Partage de position à la demande",
+                        color = Success,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp
+                    )
+                }
+
+                Button(
+                    onClick = { onNavigate(1) },
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = Orange
+                    ),
+                    shape = RoundedCornerShape(24.dp),
+                    contentPadding = PaddingValues(
+                        horizontal = 14.dp,
+                        vertical = 10.dp
+                    )
+                ) {
+                    Text(
+                        "Partager",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            HomeTile(
+                "⌖",
+                "Où suis-je ?",
+                "Voir ma position\net la partager",
+                Modifier.weight(1f)
+            ) { onNavigate(1) }
+
+            HomeTile(
+                "▣",
+                "Lieux",
+                "Mes lieux enregistrés\net favoris",
+                Modifier.weight(1f)
+            ) { onNavigate(2) }
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            HomeTile(
+                "•••",
+                "Demandes",
+                "Demander la position\nd'un proche",
+                Modifier.weight(1f)
+            ) { onNavigate(3) }
+
+            HomeTile(
+                "✚",
+                "Urgences",
+                "Annuaire des secours\net numéros utiles",
+                Modifier.weight(1f),
+                highlight = true
+            ) { onNavigate(5) }
+        }
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onNavigate(4) },
+            shape = RoundedCornerShape(22.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = CardBlue
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(18.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text("♟", color = Orange, fontSize = 42.sp)
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "Groupes",
+                        color = Pale,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "Activités de plein air et partage de position en groupe",
+                        color = Muted,
+                        fontSize = 13.sp
+                    )
+                }
+
+                Text("→", color = Pale, fontSize = 26.sp)
+            }
+        }
+
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFF0B2540)
+            ),
+            shape = RoundedCornerShape(18.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.padding(15.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    "⬡",
+                    color = Color(0xFF4A91D9),
+                    fontSize = 28.sp
+                )
+
+                Column {
+                    Text(
+                        "Balise protège votre vie privée.",
+                        color = Pale,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp
+                    )
+                    Text(
+                        "Vos données de lieux restent sur votre appareil.",
+                        color = Muted,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(4.dp))
+    }
+}
+
+@Composable
+private fun HomeTile(
+    symbol: String,
+    title: String,
+    description: String,
+    modifier: Modifier = Modifier,
+    highlight: Boolean = false,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier
+            .height(174.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (highlight) {
+                Color(0xFF593719)
+            } else {
+                CardBlue
+            }
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(15.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                symbol,
+                color = Orange,
+                fontSize = 38.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                Text(
+                    title,
+                    color = Pale,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    description,
+                    color = Muted,
+                    fontSize = 11.sp,
+                    lineHeight = 15.sp
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
 fun WhereAmIScreen() {
     val context = LocalContext.current
     var location by remember { mutableStateOf<Location?>(null) }
