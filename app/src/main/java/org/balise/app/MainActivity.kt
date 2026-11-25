@@ -46,12 +46,12 @@ import java.util.Date
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
-        override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val startTab = intent.getIntExtra("tab", 0)
         setContent {
-            MaterialTheme {
-                BaliseApp(startTab)
+            BaliseTheme {  // Utilisez aussi votre thème personnalisé
+                BaliseMain(startTab)  // ✅ Interface moderne
             }
         }
     }
