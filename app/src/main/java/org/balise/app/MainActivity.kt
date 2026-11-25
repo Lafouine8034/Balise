@@ -46,19 +46,20 @@ import java.util.Date
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
+        override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val startTab = intent.getIntExtra("tab", 0)
         setContent {
             MaterialTheme {
-                BaliseApp()
+                BaliseApp(startTab)
             }
         }
     }
 }
 
 @Composable
-fun BaliseApp() {
-    var tab by remember { mutableIntStateOf(0) }
+fun BaliseApp(startTab: Int = 0) {
+    var tab by remember { mutableIntStateOf(startTab) }
     var guiding by remember { mutableStateOf<Place?>(null) }
     Scaffold(
         bottomBar = {
@@ -71,21 +72,29 @@ fun BaliseApp() {
                 )
                 NavigationBarItem(
                     selected = tab == 1,
-                    onClick = { tab = 1 },
+                    onClick = { tab = 1; guiding = null },
                     icon = {},
                     label = { Text("Lieux") }
+                )
+                NavigationBarItem(
+                    selected = tab == 2,
+                    onClick = { tab = 2; guiding = null },
+                    icon = {},
+                    label = { Text("Demandes") }
                 )
             }
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             val target = guiding
-            if (target != null && tab == 1) {
+            if (target != null) {
                 GuideScreen(place = target, onClose = { guiding = null })
             } else if (tab == 0) {
                 WhereAmIScreen()
-            } else {
+            } else if (tab == 1) {
                 PlacesScreen(onGuide = { guiding = it })
+            } else {
+                RequestsScreen(onGuide = { guiding = it })
             }
         }
     }
