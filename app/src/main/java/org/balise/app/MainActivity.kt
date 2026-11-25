@@ -82,6 +82,12 @@ fun BaliseApp(startTab: Int = 0) {
                     icon = {},
                     label = { Text("Demandes") }
                 )
+                NavigationBarItem(
+                    selected = tab == 3,
+                    onClick = { tab = 3; guiding = null },
+                    icon = {},
+                    label = { Text("Urgence") }
+                )
             }
         }
     ) { padding ->
@@ -93,8 +99,10 @@ fun BaliseApp(startTab: Int = 0) {
                 WhereAmIScreen()
             } else if (tab == 1) {
                 PlacesScreen(onGuide = { guiding = it })
-            } else {
+            } else if (tab == 2) {
                 RequestsScreen(onGuide = { guiding = it })
+            } else {
+                EmergencyScreen()
             }
         }
     }
