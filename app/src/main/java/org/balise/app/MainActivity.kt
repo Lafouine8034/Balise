@@ -96,10 +96,7 @@ fun WhereAmIScreen() {
             ) { Text("Partager ma position") }
         }
 
-        Text(
-            "Balise ne remplace pas les secours. En cas d'urgence, appelez le 112.",
-            style = MaterialTheme.typography.bodySmall
-        )
+        
     }
 }
 
