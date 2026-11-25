@@ -61,33 +61,18 @@ class MainActivity : ComponentActivity() {
 fun BaliseApp(startTab: Int = 0) {
     var tab by remember { mutableIntStateOf(startTab) }
     var guiding by remember { mutableStateOf<Place?>(null) }
+    val labels = listOf("Position", "Lieux", "Demandes", "Groupes", "Urgence")
     Scaffold(
         bottomBar = {
             NavigationBar {
-                NavigationBarItem(
-                    selected = tab == 0,
-                    onClick = { tab = 0; guiding = null },
-                    icon = {},
-                    label = { Text("Où suis-je ?") }
-                )
-                NavigationBarItem(
-                    selected = tab == 1,
-                    onClick = { tab = 1; guiding = null },
-                    icon = {},
-                    label = { Text("Lieux") }
-                )
-                NavigationBarItem(
-                    selected = tab == 2,
-                    onClick = { tab = 2; guiding = null },
-                    icon = {},
-                    label = { Text("Demandes") }
-                )
-                NavigationBarItem(
-                    selected = tab == 3,
-                    onClick = { tab = 3; guiding = null },
-                    icon = {},
-                    label = { Text("Urgence") }
-                )
+                labels.forEachIndexed { index, label ->
+                    NavigationBarItem(
+                        selected = tab == index,
+                        onClick = { tab = index; guiding = null },
+                        icon = {},
+                        label = { Text(label, maxLines = 1) }
+                    )
+                }
             }
         }
     ) { padding ->
@@ -95,19 +80,16 @@ fun BaliseApp(startTab: Int = 0) {
             val target = guiding
             if (target != null) {
                 GuideScreen(place = target, onClose = { guiding = null })
-            } else if (tab == 0) {
-                WhereAmIScreen()
-            } else if (tab == 1) {
-                PlacesScreen(onGuide = { guiding = it })
-            } else if (tab == 2) {
-                RequestsScreen(onGuide = { guiding = it })
-            } else {
-                EmergencyScreen()
+            } else when (tab) {
+                0 -> WhereAmIScreen()
+                1 -> PlacesScreen(onGuide = { guiding = it })
+                2 -> RequestsScreen(onGuide = { guiding = it })
+                3 -> GroupsScreen(onGuide = { guiding = it })
+                else -> EmergencyScreen()
             }
         }
     }
 }
-
 @Composable
 fun WhereAmIScreen() {
     val context = LocalContext.current
