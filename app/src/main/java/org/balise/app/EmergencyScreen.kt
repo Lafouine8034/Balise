@@ -218,6 +218,8 @@ fun EmergencyScreen() {
                     )
                 }
             }
-        ) { Text("Actualiser la position") }
+                ) { Text("Actualiser la position") }
+
+        EmergencyDirectory()
     }
 }
