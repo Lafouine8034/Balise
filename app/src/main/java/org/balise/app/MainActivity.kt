@@ -50,14 +50,46 @@ import java.util.Date
 import java.util.Locale
 
 
+private val Navy = Color(0xFF102D50)
+private val DeepNavy = Color(0xFF061B30)
+private val CardBlue = Color(0xFF12385E)
+private val Orange = Color(0xFFF28C28)
+private val Pale = Color(0xFFEAF1FA)
+private val Muted = Color(0xFFB7C7DA)
+private val Success = Color(0xFF35D28A)
+
+private val BaliseColors = darkColorScheme(
+    primary = Orange,
+    onPrimary = Color.White,
+    secondary = Color(0xFF4A91D9),
+    onSecondary = Color.White,
+    background = DeepNavy,
+    onBackground = Pale,
+    surface = Navy,
+    onSurface = Pale,
+    surfaceVariant = CardBlue,
+    onSurfaceVariant = Muted
+)
+
 
 class MainActivity : ComponentActivity() {
-        override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val startTab = intent.getIntExtra("tab", 0)
+
+        val requestedTab = intent.getIntExtra("tab", 0)
+
+        // Conservation des anciens accès par notifications
+        val startTab = when (requestedTab) {
+            2 -> 3
+            3 -> 4
+            else -> 0
+        }
+
         setContent {
-            MaterialTheme {
-                BaliseApp(startTab)
+            MaterialTheme(colorScheme = BaliseColors) {
+                Surface(color = DeepNavy) {
+                    BaliseApp(startTab)
+                }
             }
         }
     }
@@ -67,16 +99,48 @@ class MainActivity : ComponentActivity() {
 fun BaliseApp(startTab: Int = 0) {
     var tab by remember { mutableIntStateOf(startTab) }
     var guiding by remember { mutableStateOf<Place?>(null) }
-    val labels = listOf("Position", "Lieux", "Demandes", "Groupes", "Urgence")
+
+    val labels = listOf(
+        "Accueil",
+        "Position",
+        "Lieux",
+        "Demandes",
+        "Groupes",
+        "Urgences"
+    )
+
+    val symbols = listOf("⌂", "⌖", "▣", "•••", "♟", "✚")
+
     Scaffold(
+        containerColor = DeepNavy,
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = Navy,
+                contentColor = Pale
+            ) {
                 labels.forEachIndexed { index, label ->
                     NavigationBarItem(
                         selected = tab == index,
-                        onClick = { tab = index; guiding = null },
-                        icon = {},
-                        label = { Text(label, maxLines = 1) }
+                        onClick = {
+                            tab = index
+                            guiding = null
+                        },
+                        icon = {
+                            Text(
+                                symbols[index],
+                                color = if (tab == index) Orange else Muted,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        },
+                        label = {
+                            Text(
+                                label,
+                                maxLines = 1,
+                                color = if (tab == index) Orange else Muted,
+                                fontSize = 10.sp
+                            )
+                        }
                     )
                 }
             }
@@ -84,18 +148,25 @@ fun BaliseApp(startTab: Int = 0) {
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
             val target = guiding
+
             if (target != null) {
-                GuideScreen(place = target, onClose = { guiding = null })
+                GuideScreen(
+                    place = target,
+                    onClose = { guiding = null }
+                )
             } else when (tab) {
-                0 -> WhereAmIScreen()
-                1 -> PlacesScreen(onGuide = { guiding = it })
-                2 -> RequestsScreen(onGuide = { guiding = it })
-                3 -> GroupsScreen(onGuide = { guiding = it })
+                0 -> HomeScreen(onNavigate = { tab = it })
+                1 -> WhereAmIScreen()
+                2 -> PlacesScreen(onGuide = { guiding = it })
+                3 -> RequestsScreen(onGuide = { guiding = it })
+                4 -> GroupsScreen(onGuide = { guiding = it })
                 else -> EmergencyScreen()
             }
         }
     }
 }
+
+
 @Composable
 fun WhereAmIScreen() {
     val context = LocalContext.current
