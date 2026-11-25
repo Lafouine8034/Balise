@@ -9,7 +9,7 @@ et retrouver un lieu enregistré.
 ## Fonctions
 
 - [x] « Où suis-je ? » avec partage (SMS, WhatsApp, Messenger…)
-- [ ] Lieux enregistrés (voiture, magasin…) avec retour guidé
+- [x] Lieux enregistrés (voiture, magasin…) avec retour guidé
 - [ ] Demande de position par SMS entre deux utilisateurs de l'app
 - [ ] Groupes pour activités de plein air
 - [ ] Lien web pour les destinataires sans l'app (serveur facultatif)
