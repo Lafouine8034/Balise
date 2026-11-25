@@ -1,7 +1,9 @@
 # Balise
 
-Application Android libre et gratuite pour savoir où l'on est, partager sa position
-et retrouver un lieu enregistré.
+Application Android libre et gratuite pour savoir où l'on est, partager sa position, retrouver un lieu enregistré.
+Permet aussi d'envoyer un lien cliquable à un contact pour qu'il communique son emplacement, pratique en situation d'urgence.
+L'ensemble des numéros de secours et d'écoutes sont pré-enregistrés.
+Widgt permettant d'enregistrer très vite un emplacement.
 
 > ⚠️ Balise ne remplace pas les secours. En cas d'urgence, appelez le **112**
 > (114 par SMS pour les personnes sourdes ou malentendantes).
@@ -10,9 +12,8 @@ et retrouver un lieu enregistré.
 
 - [x] « Où suis-je ? » avec partage (SMS, WhatsApp, Messenger…)
 - [x] Lieux enregistrés (voiture, magasin…) avec retour guidé
-- [ ] Demande de position par SMS entre deux utilisateurs de l'app
-- [ ] Groupes pour activités de plein air
-- [ ] Lien web pour les destinataires sans l'app (serveur facultatif)
+- [x] Demande de position par SMS, Whatsapp ou autre
+- [x] Groupes pour activités de plein air
 
 ## Vie privée
 
