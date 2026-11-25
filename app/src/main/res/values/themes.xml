@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Balise" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">#0B1F4D</item>
-        <item name="android:navigationBarColor">#0B1F4D</item>
+    <style name="Theme.Balise" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">#061226</item>
+        <item name="android:navigationBarColor">#061226</item>
+        <item name="android:windowBackground">#061226</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>
