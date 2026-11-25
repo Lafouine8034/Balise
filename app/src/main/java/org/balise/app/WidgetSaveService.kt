@@ -1,11 +1,14 @@
 package org.balise.app
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.location.Location
 import android.location.LocationListener
@@ -15,6 +18,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -48,11 +52,7 @@ class WidgetSaveService : Service(), LocationListener {
         showNotification("📍 Enregistrement du lieu…", ongoing = true)
 
         if (!hasLocationPermission(this)) {
-            showNotification(
-                "❌ Permission localisation requise. Ouvrez Balise.",
-                ongoing = false,
-                openApp = true
-            )
+            showNotification("❌ Permission localisation requise. Ouvrez l'application Balise.", ongoing = false, openApp = true)
             stopSelf()
             return START_NOT_STICKY
         }
@@ -65,6 +65,14 @@ class WidgetSaveService : Service(), LocationListener {
 
         requestFreshLocation()
         return START_STICKY
+    }
+
+    private fun hasLocationPermission(context: Context): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun getLastKnownLocation(): Location? {
@@ -84,7 +92,7 @@ class WidgetSaveService : Service(), LocationListener {
 
     private fun isRecent(location: Location): Boolean {
         val age = System.currentTimeMillis() - location.time
-        return age < 60_000L
+        return age < 60_000L // Moins d'une minute
     }
 
     private fun requestFreshLocation() {
@@ -130,6 +138,7 @@ class WidgetSaveService : Service(), LocationListener {
         val now = System.currentTimeMillis()
         val defaultName = "Lieu du " + SimpleDateFormat("dd/MM HH:mm", Locale.FRANCE).format(Date(now))
 
+        // Création de l'objet Place
         val place = Place(
             id = now,
             name = defaultName,
@@ -139,11 +148,13 @@ class WidgetSaveService : Service(), LocationListener {
             savedAt = now
         )
 
+        // Sauvegarde via PlaceStore
         val store = PlaceStore(this)
         val current = store.load().toMutableList()
         current.add(0, place)
         store.save(current)
 
+        // Mise à jour du widget
         val views = RemoteViews(packageName, R.layout.widget_balise)
         views.setTextViewText(R.id.widget_title, "✓ Enregistré")
         views.setTextViewText(R.id.widget_status, defaultName)
@@ -154,7 +165,8 @@ class WidgetSaveService : Service(), LocationListener {
             appWidgetManager.updateAppWidget(widgetId, views)
         }
 
-        val text = "📍 $defaultName\n${formatDecimal(location.latitude, location.longitude)} (±${location.accuracy.toInt()}m)"
+        val coords = "${location.latitude.toString().take(8)}, ${location.longitude.toString().take(8)}"
+        val text = "📍 $defaultName\n$coords (±${location.accuracy.toInt()}m)"
         showNotification(text, ongoing = false)
     }
 
