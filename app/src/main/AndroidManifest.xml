@@ -15,6 +15,20 @@
         android:theme="@style/Theme.Balise">
         <activity
             android:name=".MainActivity"
+            <receiver
+    android:name=".BaliseWidget"
+    android:exported="true">
+    <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="org.balise.app.ACTION_SAVE_LOCATION" />
+    </intent-filter>
+    <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/balise_widget_info" />
+</receiver>
+            <service
+    android:name=".WidgetSaveService"
+    android:exported="false" />
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
