@@ -23,8 +23,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- DÉBUT DU WIDGET -->
         <receiver
             android:name=".BaliseWidget"
             android:exported="true">
@@ -36,6 +34,11 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/balise_widget_info" />
         </receiver>
+
+        <service
+            android:name=".WidgetSaveService"
+            android:exported="false" />
+     
 
         <service
             android:name=".WidgetSaveService"
