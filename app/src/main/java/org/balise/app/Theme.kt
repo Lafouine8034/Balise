@@ -1,34 +1,40 @@
 package org.balise.app
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
+val Night = Color(0xFF061226)
 val DeepBlue = Color(0xFF0B1F4D)
+val CardBlue = Color(0xFF10285A)
+val Line = Color(0xFF2A4580)
+val Muted = Color(0xFFB7C3DE)
 val Orange = Color(0xFFFF7A1A)
 val OrangeLight = Color(0xFFFFE7D3)
-val Cloud = Color(0xFFF4F6FB)
 
-private val BaliseColors = lightColorScheme(
-    primary = DeepBlue,
-    onPrimary = Color.White,
-    primaryContainer = Color(0xFFDCE4F5),
-    onPrimaryContainer = DeepBlue,
+private val BaliseColors = darkColorScheme(
+    primary = Orange,
+    onPrimary = DeepBlue,
+    primaryContainer = Color(0xFF1C3A7A),
+    onPrimaryContainer = Color.White,
     secondary = Orange,
     onSecondary = DeepBlue,
-    secondaryContainer = OrangeLight,
-    onSecondaryContainer = DeepBlue,
+    secondaryContainer = Color(0xFF3B2410),
+    onSecondaryContainer = OrangeLight,
     tertiary = Orange,
     onTertiary = DeepBlue,
-    background = Cloud,
-    onBackground = DeepBlue,
-    surface = Color.White,
-    onSurface = DeepBlue,
-    surfaceVariant = Color(0xFFE6EAF4),
-    onSurfaceVariant = Color(0xFF3B4A6B),
-    surfaceContainerHighest = Color(0xFFE8ECF6),
-    error = Color(0xFFC62828),
+    background = Night,
+    onBackground = Color.White,
+    surface = Night,
+    onSurface = Color.White,
+    surfaceVariant = CardBlue,
+    onSurfaceVariant = Muted,
+    surfaceContainer = CardBlue,
+    surfaceContainerHigh = CardBlue,
+    surfaceContainerHighest = CardBlue,
+    outline = Line,
+    error = Color(0xFFE5484D),
     onError = Color.White
 )
 
