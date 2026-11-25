@@ -1,9 +1,5 @@
 package org.balise.app
 
-import android.content.Context
-import org.json.JSONArray
-import org.json.JSONObject
-
 data class Place(
     val id: Long,
     val name: String,
