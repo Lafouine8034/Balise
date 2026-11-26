@@ -9,7 +9,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "org.balise.app"
+        applicationId = "io.github.lafouine8034.balise"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
