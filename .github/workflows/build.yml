@@ -22,17 +22,20 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.9
-        - name: Préparer la clé de signature
+      - name: Préparer la clé de signature
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           if [ -n "$KEYSTORE_BASE64" ]; then
+            # Retire espaces, retours à la ligne, tabulations et guillemets copiés par erreur
             CLEAN=$(printf '%s' "$KEYSTORE_BASE64" | tr -d ' \r\n\t"')
             echo "Longueur du secret : ${#CLEAN} caractères"
             echo "Caractères interdits : $(printf '%s' "$CLEAN" | tr -d 'A-Za-z0-9+/=' | wc -c)"
             echo "Reste modulo 4 : $(( ${#CLEAN} % 4 ))"
-            echo "Début : ${CLEAN:0:4}"
-            printf '%s' "$CLEAN" | base64 -d > "$RUNNER_TEMP/balise.jks"
+            if ! printf '%s' "$CLEAN" | base64 -d > "$RUNNER_TEMP/balise.jks"; then
+              echo "::error::Le secret KEYSTORE_BASE64 n'est pas du base64 valide. Régénérez-le avec : base64 -w0 balise.jks"
+              exit 1
+            fi
             echo "KEYSTORE_PATH=$RUNNER_TEMP/balise.jks" >> "$GITHUB_ENV"
           fi
       - name: Compiler l'APK signé
