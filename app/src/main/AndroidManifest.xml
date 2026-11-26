@@ -7,11 +7,11 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
-      <application
-        android:allowBackup="true"
+    <application
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.Balise">
 
@@ -23,27 +23,26 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Widget « Enregistrer ici » -->
+        <activity
+            android:name=".QuickSaveActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.Balise.Transparent" />
+
         <receiver
             android:name=".BaliseWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="org.balise.app.ACTION_SAVE_LOCATION" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/balise_widget_info" />
         </receiver>
-
-        <service
-            android:name=".WidgetSaveService"
-            android:exported="false" />
-     
-
-        <service
-            android:name=".WidgetSaveService"
-            android:exported="false" />
-        <!-- FIN DU WIDGET -->
 
     </application>
 </manifest>
