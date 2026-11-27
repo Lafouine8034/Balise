@@ -203,7 +203,7 @@ private fun HomeScreen(onOpen: (Int) -> Unit) {
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Tile("📍", "Où suis-je ?", "Voir ma position et la partager", false, Modifier.weight(1f).height(176.dp)) { onOpen(0) }
-            Tile("🔖", "Lieux", "Mes lieux enregistrés", false, Modifier.weight(1f).height(176.dp)) { onOpen(1) }
+            Tile("", "Lieux", "Mes lieux enregistrés", false, Modifier.weight(1f).height(176.dp), iconRes = R.drawable.ic_car) { onOpen(1) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Tile("💬", "Demandes", "Demander la position d’un proche", false, Modifier.weight(1f).height(176.dp)) { onOpen(2) }
@@ -273,6 +273,7 @@ private fun Tile(
     subtitle: String,
     highlight: Boolean,
     modifier: Modifier,
+    iconRes: Int? = null,
     onClick: () -> Unit
 ) {
     Card(
@@ -289,7 +290,11 @@ private fun Tile(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(emoji, fontSize = 38.sp)
+            if (iconRes != null) {
+                Image(painter = painterResource(iconRes), contentDescription = null, modifier = Modifier.size(48.dp))
+            } else {
+                Text(emoji, fontSize = 38.sp)
+            }
             Column {
                 Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {

@@ -1,10 +1,7 @@
 package org.balise.app
 
 import android.Manifest
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.os.Bundle
-import android.widget.RemoteViews
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -52,24 +49,9 @@ class QuickSaveActivity : ComponentActivity() {
                 val store = PlaceStore(this)
                 store.save(listOf(Place(now, name, loc.latitude, loc.longitude, loc.accuracy, now)) + store.load())
                 Toast.makeText(this, "Enregistré : $name (± ${loc.accuracy.toInt()} m)", Toast.LENGTH_LONG).show()
-                updateWidgets(name)
+                BaliseWidget.showSavedBriefly(this)
             }
             finish()
-        }
-    }
-
-    private fun updateWidgets(name: String) {
-        try {
-            val manager = AppWidgetManager.getInstance(this)
-            val ids = manager.getAppWidgetIds(ComponentName(this, BaliseWidget::class.java))
-            if (ids.isEmpty()) return
-            val views = RemoteViews(packageName, R.layout.widget_balise)
-            views.setTextViewText(R.id.widget_title, "✓ Enregistré")
-            views.setTextViewText(R.id.widget_status, name)
-            views.setViewVisibility(R.id.widget_status, android.view.View.VISIBLE)
-            manager.partiallyUpdateAppWidget(ids, views)
-        } catch (e: Exception) {
-            // le widget n'est pas indispensable : l'enregistrement a déjà eu lieu
         }
     }
 }

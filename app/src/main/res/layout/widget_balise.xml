@@ -6,34 +6,23 @@
     android:background="@drawable/widget_background_selector"
     android:gravity="center"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:padding="4dp">
 
-    <TextView
+    <ImageView
         android:id="@+id/widget_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="📍"
-        android:textSize="32sp" />
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:contentDescription="Enregistrer ici"
+        android:src="@drawable/ic_car" />
 
     <TextView
         android:id="@+id/widget_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Enregistrer ici"
-        android:textColor="#FFFFFFFF"
-        android:textSize="13sp"
-        android:textStyle="bold"
-        android:gravity="center" />
-
-    <TextView
-        android:id="@+id/widget_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="Lieu"
-        android:textColor="#FFB7C3DE"
-        android:textSize="10sp"
         android:gravity="center"
-        android:visibility="gone" />
+        android:maxLines="1"
+        android:text="Enregistrer"
+        android:textColor="#FFFFFFFF"
+        android:textSize="10sp"
+        android:textStyle="bold" />
 </LinearLayout>

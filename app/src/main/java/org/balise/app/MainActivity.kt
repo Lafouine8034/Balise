@@ -14,6 +14,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -151,6 +153,8 @@ fun PlacesScreen(onGuide: (Place) -> Unit) {
     var name by remember { mutableStateOf("") }
     var status by remember { mutableStateOf("") }
     var toDelete by remember { mutableStateOf<Place?>(null) }
+    var toRename by remember { mutableStateOf<Place?>(null) }
+    var newName by remember { mutableStateOf("") }
 
     fun locate() {
         status = "Recherche de la position…"
@@ -232,10 +236,40 @@ fun PlacesScreen(onGuide: (Place) -> Unit) {
                 PlaceCard(
                     place = place,
                     onGuide = { onGuide(place) },
+                    onRename = { toRename = place; newName = place.name },
                     onDelete = { toDelete = place }
                 )
             }
         }
+    }
+
+    toRename?.let { p ->
+        AlertDialog(
+            onDismissRequest = { toRename = null },
+            title = { Text("Modifier le nom") },
+            text = {
+                OutlinedTextField(
+                    value = newName,
+                    onValueChange = { newName = it },
+                    label = { Text("Nom du lieu (ex. Voiture)") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = newName.isNotBlank(),
+                    onClick = {
+                        val finalName = newName.trim()
+                        places = places.map { if (it.id == p.id) it.copy(name = finalName) else it }
+                        store.save(places)
+                        toRename = null
+                    }
+                ) { Text("Enregistrer") }
+            },
+            dismissButton = {
+                TextButton(onClick = { toRename = null }) { Text("Annuler") }
+            }
+        )
     }
 
     toDelete?.let { p ->
@@ -257,8 +291,9 @@ fun PlacesScreen(onGuide: (Place) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun PlaceCard(place: Place, onGuide: () -> Unit, onDelete: () -> Unit) {
+fun PlaceCard(place: Place, onGuide: () -> Unit, onRename: () -> Unit, onDelete: () -> Unit) {
     val context = LocalContext.current
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -273,11 +308,12 @@ fun PlaceCard(place: Place, onGuide: () -> Unit, onDelete: () -> Unit) {
             Text(formatDecimal(place.latitude, place.longitude))
             Text("Précision : ± ${place.accuracy.toInt()} m", style = MaterialTheme.typography.bodySmall)
             Button(onClick = onGuide, modifier = Modifier.fillMaxWidth()) { Text("Me guider (sans réseau)") }
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                TextButton(onClick = { openInMaps(context, place) }) { Text("Ouvrir la carte") }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextButton(onClick = { openInMaps(context, place) }) { Text("Carte") }
                 TextButton(onClick = {
                     sharePosition(context, place.name, place.latitude, place.longitude, place.accuracy)
                 }) { Text("Partager") }
+                TextButton(onClick = onRename) { Text("Modifier") }
                 TextButton(onClick = onDelete) { Text("Supprimer") }
             }
         }
